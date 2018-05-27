@@ -1,0 +1,33 @@
+From 82d76e80d871ee74e747e641e5260bc4a3300edb Sat, 15 Aug 2015 19:28:35 -0700
+From: IacobIonut01 <paulionut2003@gmail.com>
+Date: Sat, 15 Aug 2015 19:28:35 -0700
+Subject: [PATCH] move brightness slider to bottom of QS panel
+
+Change-Id: I8162cb69462b553a9671af22c44beb7ee8d79bbd
+---
+diff --git a/packages/SystemUI/src/com/android/systemui/qs/QSPanel.java b/packages/SystemUI/src/com/android/systemui/qs/QSPanel.java
+index 718f6eb..5845379 100644
+--- a/packages/SystemUI/src/com/android/systemui/qs/QSPanel.java
++++ b/packages/SystemUI/src/com/android/systemui/qs/QSPanel.java
+@@ -104,19 +104,15 @@ public class QSPanel extends LinearLayout implements Tunable, Callback, Brightne
+ 
+         mBrightnessView = LayoutInflater.from(context).inflate(
+                 R.layout.quick_settings_brightness_dialog, this, false);
+-        addView(mBrightnessView);
+-
+-        mBrightnessIcon = (ImageView) mBrightnessView.findViewById(R.id.brightness_icon);
+-
+         setupTileLayout();
+-
+         mPageIndicator = LayoutInflater.from(context).inflate(
+                 R.layout.qs_page_indicator, this, false);
+         addView(mPageIndicator);
+         if (mTileLayout instanceof PagedTileLayout) {
+             ((PagedTileLayout) mTileLayout).setPageIndicator((PageIndicator) mPageIndicator);
+         }
+-
++        addView(mBrightnessView);
++        mBrightnessIcon = (ImageView) mBrightnessView.findViewById(R.id.brightness_icon);
+         addDivider();
+ 
+         mFooter = new QSSecurityFooter(this, context);
