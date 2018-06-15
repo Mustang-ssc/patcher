@@ -22,8 +22,3 @@ patch -d frameworks/base			-p1 -s -N --no-backup-if-mismatch < $MUSTANG/framewor
 patch -d packages/apps/Settings			-p1 -s -N --no-backup-if-mismatch < $MUSTANG/resurrection_packages_apps_settings0.patch
 
 ### Custom patches
-
-### Rejects removal
-rm -rf ./frameworks/base/packages/SystemUI/src/com/android/systemui/qs/QSPanel.java.rej
-rm -rf ./frameworks/base/packages/SystemUI/res/values/config.xml.rej
-rm -rf ./frameworks/base/packages/SystemUI/src/com/android/systemui/qs/tileimpl/QSFactoryImpl.java.rej

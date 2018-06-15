@@ -1,0 +1,218 @@
+From f877cce134fabefe805360aee521acac6b6cadf9 Sat Dec 23 23:50:11 2017 +0800
+From: xyyx <xyyx@mail.ru>
+Date:   Sat Dec 23 23:50:11 2017 +0800
+Subject: Add tile for enable/disable HW keys
+
+Change-Id: I718c7910a27f57bb28479b7be96da4486981f524
+---
+diff --git a/packages/SystemUI/res/drawable/ic_qs_hwkeys.xml b/packages/SystemUI/res/drawable/ic_qs_hwkeys.xml
+new file mode 100644
+index 0000000..f422e56
+--- /dev/null
++++ b/packages/SystemUI/res/drawable/ic_qs_hwkeys.xml
+@@ -0,0 +1,10 @@
++<vector
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    android:height="64dp"
++    android:width="64dp"
++    android:viewportHeight="24.0"
++    android:viewportWidth="24.0">
++    <path
++        android:fillColor="#FFFFFFFF"
++        android:pathData="M20,5L4,5c-1.1,0 -1.99,0.9 -1.99,2L2,17c0,1.1 0.9,2 2,2h16c1.1,0 2,-0.9 2,-2L22,7c0,-1.1 -0.9,-2 -2,-2zM11,8h2v2h-2L11,8zM11,11h2v2h-2v-2zM8,8h2v2L8,10L8,8zM8,11h2v2L8,13v-2zM7,13L5,13v-2h2v2zM7,10L5,10L5,8h2v2zM16,17L8,17v-2h8v2zM16,13h-2v-2h2v2zM16,10h-2L14,8h2v2zM19,13h-2v-2h2v2zM19,10h-2L17,8h2v2z"/>
++</vector>
+\ No newline at end of file
+diff --git a/packages/SystemUI/res/values/config.xml b/packages/SystemUI/res/values/config.xml
+index 6bc500a..00cbe03 100644
+--- a/packages/SystemUI/res/values/config.xml
++++ b/packages/SystemUI/res/values/config.xml
+@@ -111,8 +111,8 @@
+     </string>
+ 
+     <!-- Tiles native to System UI. Order should match "quick_settings_tiles_default" -->
+-    <string name="quick_settings_tiles_stock" translatable="false">    wifi,cell,battery,dnd,flashlight,rotation,bt,airplane,nfc,location,hotspot,inversion,saver,compass,music,work,configurations,screenshot,locale,navigation,sound,reboot,pip,livedisplay,cast,pie,night,adb_network,ambient_display,expanded_desktop,caffeine,screenrecord,heads_up,weather,sync,usb_tether,volume_panel,soundsearch,assist,voiceassist,google
+-    </string>
++    <string name="quick_settings_tiles_stock" translatable="false">    wifi,cell,battery,dnd,flashlight,rotation,bt,airplane,nfc,location,hotspot,inversion,saver,compass,music,work,configurations,screenshot,locale,navigation,sound,reboot,pip,livedisplay,cast,pie,night,adb_network,ambient_display,expanded_desktop,caffeine,screenrecord,heads_up,weather,sync,usb_tether,volume_panel,soundsearch,assist,voiceassist,google,hwkeys
++   </string>
+ 
+     <!-- The tiles to display in QuickSettings -->
+     <string name="quick_settings_tiles" translatable="false">default</string>
+diff --git a/packages/SystemUI/res/values/rr_strings.xml b/packages/SystemUI/res/values/rr_strings.xml
+index 7bda571..a7bf2f5 100644
+--- a/packages/SystemUI/res/values/rr_strings.xml
++++ b/packages/SystemUI/res/values/rr_strings.xml
+@@ -216,6 +216,11 @@
+     <string name="quick_settings_expanded_navigation_off">Hide navbar</string>
+     <string name="quick_settings_expanded_statusbar_off">Hide statusbar</string>
+ 
++    <!-- HW Keys Tile -->
++    <string name="accessibility_quick_settings_hwkeys_on">HW keys on</string>
++    <string name="accessibility_quick_settings_hwkeys_off">HW keys off</string>
++    <string name="quick_settings_hwkeys_label">HW keys</string>
++
+     <!-- Weather string format in expanded statusbar header -->
+     <string name="status_bar_weather_format"><xliff:g id="temp">%1$s</xliff:g></string>
+ 
+diff --git a/packages/SystemUI/src/com/android/systemui/qs/tileimpl/QSFactoryImpl.java b/packages/SystemUI/src/com/android/systemui/qs/tileimpl/QSFactoryImpl.java
+index 9f3a90f..f58f76d 100644
+--- a/packages/SystemUI/src/com/android/systemui/qs/tileimpl/QSFactoryImpl.java
++++ b/packages/SystemUI/src/com/android/systemui/qs/tileimpl/QSFactoryImpl.java
+@@ -43,6 +43,7 @@ import com.android.systemui.qs.tiles.GoogleNowTile;
+ import com.android.systemui.qs.tiles.GoogleVoiceAssistTile;
+ import com.android.systemui.qs.tiles.HeadsUpTile;
+ import com.android.systemui.qs.tiles.HotspotTile;
++import com.android.systemui.qs.tiles.HWKeysTile;
+ import com.android.systemui.qs.tiles.IntentTile;
+ import com.android.systemui.qs.tiles.LocaleTile;
+ import com.android.systemui.qs.tiles.LiveDisplayTile;
+@@ -118,10 +119,10 @@ public class QSFactoryImpl implements QSFactory {
+         else if (tileSpec.equals("pie")) return new PieTile(mHost);
+         else if (tileSpec.equals("expanded_desktop")) return new ExpandedDesktopTile(mHost);
+         else if (tileSpec.equals("navigation")) return new NavigationBarTile(mHost);
++        else if (tileSpec.equals("hwkeys")) return  new HWKeysTile(mHost);
+         else if (tileSpec.equals("assist")) return new GoogleAssistTile(mHost);
+         else if (tileSpec.equals("voiceassist")) return new GoogleVoiceAssistTile(mHost);
+         else if (tileSpec.equals("google")) return new GoogleNowTile(mHost);
+-        // Intent tiles.
+         else if (tileSpec.startsWith(IntentTile.PREFIX)) return IntentTile.create(mHost, tileSpec);
+         else if (tileSpec.startsWith(CustomTile.PREFIX)) return CustomTile.create(mHost, tileSpec);
+         else {
+diff --git a/packages/SystemUI/src/com/android/systemui/qs/tiles/HWKeysTile.java b/packages/SystemUI/src/com/android/systemui/qs/tiles/HWKeysTile.java
+new file mode 100644
+index 0000000..abb1ab3
+--- /dev/null
++++ b/packages/SystemUI/src/com/android/systemui/qs/tiles/HWKeysTile.java
+@@ -0,0 +1,133 @@
++/*
++ * Copyright (C) 2017 The Nitrogen Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.systemui.qs.tiles;
++
++import android.content.ComponentName;
++import android.content.Intent;
++import android.provider.Settings;
++import android.service.quicksettings.Tile;
++
++import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
++import com.android.systemui.plugins.qs.QSTile.BooleanState;
++import com.android.systemui.qs.QSHost;
++import com.android.systemui.qs.tileimpl.QSTileImpl;
++import com.android.systemui.R;
++import com.android.systemui.R.drawable;
++
++/** Quick settings tile: HWKeys Actions **/
++public class HWKeysTile extends QSTileImpl<BooleanState> {
++
++    // Masks for checking presence of hardware keys.
++    // Must match values in frameworks/base/core/res/res/values/config.xml
++    public static final int KEY_MASK_HOME = 0x01;
++    public static final int KEY_MASK_BACK = 0x02;
++    public static final int KEY_MASK_MENU = 0x04;
++    public static final int KEY_MASK_APP_SWITCH = 0x10;
++
++    private final Icon mIcon = ResourceIcon.get(drawable.ic_qs_hwkeys);
++
++    public HWKeysTile(QSHost host) {
++        super(host);
++    }
++
++    @Override
++    public BooleanState newTileState() {
++        return new BooleanState();
++    }
++
++    @Override
++    protected void handleClick() {
++        setEnabled(!mState.value);
++        refreshState();
++    }
++
++    @Override
++    public CharSequence getTileLabel() {
++        return mContext.getString(R.string.quick_settings_hwkeys_label);
++    }
++
++    @Override
++    public Intent getLongClickIntent() {
++        return new Intent().setComponent(new ComponentName(
++            "com.android.settings", "com.android.settings.Settings$ButtonSettingsActivity"));
++    }
++
++    private void setEnabled(boolean enabled) {
++        Settings.Secure.putInt(mContext.getContentResolver(),
++                Settings.Secure.HARDWARE_KEYS_DISABLE,
++                enabled ? 0 : 1);
++    }
++
++   private boolean isHWKeysEnabled() {
++        return Settings.Secure.getInt(mContext.getContentResolver(),
++                Settings.Secure.HARDWARE_KEYS_DISABLE, 0) == 0;
++    }
++
++    @Override
++    protected void handleUpdateState(BooleanState state, Object arg) {
++        if (state.slash == null) {
++            state.slash = new SlashState();
++        }
++        state.value = isHWKeysEnabled();
++        state.icon = mIcon;
++        state.slash.isSlashed = !state.value;
++        if (isHWKeysEnabled()) {
++            state.label =  mContext.getString(
++                    R.string.accessibility_quick_settings_hwkeys_on);
++            state.state = Tile.STATE_ACTIVE;
++        } else {
++            state.label =  mContext.getString(
++                    R.string.accessibility_quick_settings_hwkeys_off);
++            state.state = Tile.STATE_INACTIVE;
++        }
++    }
++
++    @Override
++    public boolean isAvailable() {
++        final int deviceKeys = mContext.getResources().getInteger(
++                com.android.internal.R.integer.config_deviceHardwareKeys);
++
++        // read bits for present hardware keys
++        final boolean hasHomeKey = (deviceKeys & KEY_MASK_HOME) != 0;
++        final boolean hasBackKey = (deviceKeys & KEY_MASK_BACK) != 0;
++        final boolean hasMenuKey = (deviceKeys & KEY_MASK_MENU) != 0;
++        final boolean hasAppSwitchKey = (deviceKeys & KEY_MASK_APP_SWITCH) != 0;
++
++        return (hasHomeKey || hasBackKey || hasMenuKey || hasAppSwitchKey);
++    }
++
++    @Override
++    protected String composeChangeAnnouncement() {
++        if (mState.value) {
++            return mContext.getString(
++                    R.string.accessibility_quick_settings_hwkeys_on);
++        } else {
++            return mContext.getString(
++                    R.string.accessibility_quick_settings_hwkeys_off);
++        }
++    }
++
++    @Override
++    public int getMetricsCategory() {
++        return MetricsEvent.RESURRECTED;
++    }
++
++    @Override
++    public void handleSetListening(boolean listening) {
++        // Do nothing
++    }
++}
